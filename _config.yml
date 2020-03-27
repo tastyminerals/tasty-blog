@@ -28,7 +28,7 @@ twitter_username: tastyminerals
 github_username: tastyminerals
 
 # Build settings
-theme: minima
+theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
 
