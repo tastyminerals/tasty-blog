@@ -692,7 +692,6 @@ Let's see how to use it.
 
 ```d
 import mir.ndslice;
-import mir.ndslice.sorting;
 
 auto a = 10.iota.array.sliced(5, 2);
 /*
@@ -703,7 +702,7 @@ auto a = 10.iota.array.sliced(5, 2);
      [8, 9]]
 */
 
-a.byDim1; // 1 row-wise, 0 column-wise for 2D slice
+a.byDim!1; // 1 row-wise, 0 column-wise for 2D slice
 /*
     [[0, 2, 4, 6, 8],
      [1, 3, 5, 7, 9]]
@@ -737,6 +736,31 @@ auto c = a.byDim!1.map!(a => a.all!(a => a % 2 == 1))
 auto d = a.byDim!1.map!(all!"a % 2 == 1"); // or less verbose mixin
 /*
     [false, true]
+*/
+```
+
+Now, how about sorting the 2D slice by dimension?
+
+```d
+import mir.ndslice;
+import mir.ndslice.sorting;
+
+auto a = [5, 3, -1, 0, 10, 5, 6, 2, 7, 1].array.sliced(5, 2);
+/*
+    [[5, 3],
+     [-1, 0],
+     [10, 5],
+     [6, 2],
+     [7, 1]]
+*/
+
+a.byDim!0.each!sort; // in-place sort
+/*
+    [[3, 5],
+     [-1, 0],
+     [5, 10],
+     [2, 6],
+     [1, 7]]
 */
 ```
 
