@@ -666,7 +666,7 @@ auto b = a.map!exp;
 auto c = b.map!sqrt;
 /*
     [[1.64872, 1.64872, 1.64872],
-     [1.64872, 1.64872, 1.64872]]  
+     [1.64872, 1.64872, 1.64872]]
 */
 ```
 
@@ -691,7 +691,6 @@ For that Mir has `byDim` function which accepts a dimension as a parameter to it
 Let's see how to use it.
 
 ```d
-/*
 import mir.ndslice;
 import mir.ndslice.sorting;
 
