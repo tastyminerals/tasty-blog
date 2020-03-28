@@ -13,14 +13,6 @@ theme: minima
 plugins:
   - jekyll-feed
 
-defaults:
-  -
-    scope:
-      path: ""
-      type: "post"
-    values:
-        layout: "post"
-
 exclude: ["vendor"]
 
 category_dir: categories
