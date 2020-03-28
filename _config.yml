@@ -2,7 +2,7 @@ title: Tasty D
 email: tastyminerals@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   A blog about learning the D programming language.
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/tasty-blog" # the subpath of your site, e.g. /blog
 url: "tasty-blog" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: tastyminerals
 github_username: tastyminerals
