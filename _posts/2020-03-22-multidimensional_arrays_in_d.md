@@ -1,16 +1,19 @@
 ---
+layout: post
 title: "Multidimensional Arrays in D"
+author: tastyminerals
+categories: random
 ---
 
 In the following post I would like to do a brief overview of how to create, manipulate and view multidimensional arrays in D.
 
 ### Arrays
 
-There are two types of arrays that exist in D -- **static** and **dynamic**.
+D arrays can be classified into normal arrays, fixed-length (static) arrays and dynamic arrays.
+Normal arrays represent a general concept of a collection where elements are located side by side.
 Static arrays have their dimensions fixed during creation and therefore known at compile time.
-Dynamic arrays don't have fixed dimensions.
-Both array types represent a structure with a `length` and `ptr` (a pointer to the first element) properties.
-Read more about D arrays [here](https://ddili.org/ders/d.en/arrays.html).
+Dynamic arrays don't have fixed dimensions and can grow or shrink on demand.
+Array type has `length` and `ptr` (a pointer to the first element) properties (you can read more about D arrays [here](https://ddili.org/ders/d.en/arrays.html)).
 
 ```d
 int[] arr = [2, 0, -1, 3, 5];
@@ -30,8 +33,8 @@ arr.ptr;
 */
 ```
 
-Dynamic arrays are also called **slices** in D and whenever we take a slice of an array we create a structure with another `length` and `ptr` property.
-Read more about dynamic arrays [here](https://ddili.org/ders/d.en/slices.html).
+Dynamic arrays also called slices in D.
+The specifics of slices and their implementation goes beyond the topic of the blog post (also read about slices [here](https://ddili.org/ders/d.en/slices.html)).
 
 ```d
 int[] arr = [2, 0, -1, 3, 5];
@@ -159,7 +162,9 @@ Of course, our fake `shape` property will only display correct dimensions for co
 High-performance multidimensional arrays can be created with [**mir-algorithm**](https://github.com/libmir/mir-algorithm) library which is part of bigger **Mir** package that [comprises various high-performance numeric libraries](https://github.com/libmir) for D.
 In order to comply with the terminology, we refer to arrays as slices and matrices as multidimensional slices represented in Mir by `Slice` class.
 
-[**mir.ndslice**](http://mir-algorithm.libmir.org/mir_ndslice_slice.html) module provides various implementations of multidimensional slices which are faster and more memory-efficient than native D dense arrays. Such is **mir.ndslice** `Slice` -- a multidimensional random access range that also has `shape`, `strides`, `structure` etc. properties. One thing to keep in mind is that **mir.ndslice** comes with its own `Slice`-compatible implementations of many **std.range** functions therefore for the most part you won't need to explicitly import **std.range**.
+[**mir.ndslice**](http://mir-algorithm.libmir.org/mir_ndslice_slice.html) module provides various fast and memory-efficient implementations of multidimensional slices (do not confuse them with standard [D slices](https://ddili.org/ders/d.en/slices.html)).
+**mir.ndslice** `Slice` -- a multidimensional random access range that also has `shape`, `strides`, `structure` etc. properties.
+One thing to keep in mind is that **mir.ndslice** comes with its own `Slice`-compatible implementations of many **std.range** functions therefore for the most part you won't need to explicitly import functions from **std.range**.
 
 Let's create a slice.
 
@@ -173,7 +178,7 @@ auto mirSlice = [1, 2, 3].slice!int;
 */
 ```
 
-Oopsie, it doesn't look like what we expected.
+Oops, it doesn't look like what we expected.
 If you check the shape `mirArr.shape` of the above slice, you'll see `[1, 2, 3]`.
 Yes, we created a 3D slice of zeros (because `int.init == 0`) instead of 3-element slice.
 What you need to do is to make use of `as` function from `mir.ndslice.topology` which creates a lazy view of the original elements converted to the desired type.
@@ -305,7 +310,7 @@ Using nested arrays `int[][]` to represent multidimensional arrays is not effici
 
 ### Printing Slices
 
-Printing arrays and slices is straighforward in D. Use `writeln` with `foreach` loop.
+Printing arrays and slices is straightforward in D. Use `writeln` with `foreach` loop.
 
 ```d
 import std.stdio;
@@ -808,7 +813,8 @@ assert(origSlice == origSlice[0 .. $]);
 assert(origSlice == origSlice[]);
 ```
 
-Additionally, you can perform substraction on the `$` operator to index the elements from the end.
+Additionally, you can perform basic math operations on the `$` operator to index the elements from the end.
+Indexing with single `$` won't work.
 
 ```d
 auto origSlice = 10.iota.slice;
@@ -816,7 +822,7 @@ auto origSlice = 10.iota.slice;
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 */
 
-origSlice[$-1]; // [$] won't work
+origSlice[$-1];
 /*
     9
 */
@@ -826,10 +832,14 @@ origSlice[2 .. $-3];
     [2, 3, 4, 5, 6]
 */
 
-// TODO [$ .. $-2]
+
+origSlice[$-3 .. $-1]
+/*
+    [7, 8]
+*/
 ```
 
-Multidimentional slices are indexed by first indexing the first (row) and then the second (column) dimension.
+Multidimensional slices are indexed by first indexing the first (row) and then the second (column) dimension.
 
 ```d
 auto matrix = iota([4, 2], 1);
@@ -881,6 +891,7 @@ origSlice[newSlice]; // origSlice[[0 .. 3]]
 */
 ```
 
-# Cool Stuff to Read
+#### Cool Stuff to Read
+
 - [Using D and std.ndslice as a Numpy Replacement](https://jackstouffer.com/blog/nd_slice.html)
 - [Writing efficient numerical code in D](http://blog.mir.dlang.io/ndslice/algorithm/optimization/2016/12/12/writing-efficient-numerical-code.html)
