@@ -2,7 +2,7 @@
 layout: post
 title: "Multidimensional Arrays in D"
 author: tastyminerals
-categories: random
+categories: dlang
 ---
 
 In the following post I would like to do a brief overview of how to create, manipulate and view multidimensional arrays in D.
