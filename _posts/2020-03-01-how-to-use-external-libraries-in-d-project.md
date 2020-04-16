@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Using D Libraries in Files and Projects"
+title: "Using External D Libraries in D Scripts and Projects"
 author: tastyminerals
 categories: dlang
 ---
@@ -9,7 +9,7 @@ It took me some time to find all the relevant bits and pieces on how to setup a 
 Ironically, there is plenty of information right there on the official website and D wiki.
 But it is not **streamlined**, but rather hidden in the layers of documentation and in some cases scattered all over the place.
 As a result a newcomer quickly gets lost.
-This post describes how to use external dependencies in your D scripts and projects.
+This post describes how to create a D project, include various D libraries and perform basic project configuration.
 
 ### Installing Prerequisites
 
