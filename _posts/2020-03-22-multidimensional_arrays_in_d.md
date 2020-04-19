@@ -643,9 +643,8 @@ auto g = d * d.transposed.slice; // allocate after transpose
 As you might have noticed operations are applied element-wise.
 I find it more convenient to switch from D array to Mir `Slice` via `sliced`, perform a series of basic operations and then switch back via `.field` to plain D array.
 No need for `map` overuse.
-Keep in mind that `.field` requires the `Slice` to be contiguous (check out [`assumeContiguous` method](http://mir-algorithm.libmir.org/mir_ndslice_topology.html#assumeContiguous).
-Watch out!
-`assumeContiguous` reverts some non-allocating operations such as `.transposed`.
+Keep in mind that `.field` requires the `Slice` to be contiguous (check out [`assumeContiguous` method](http://mir-algorithm.libmir.org/mir_ndslice_topology.html#assumeContiguous)).
+But watch out, `assumeContiguous` reverts some non-allocating operations such as `.transposed`.
 
 ```d
 auto a = 10.iota.sliced(5, 2);
