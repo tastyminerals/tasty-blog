@@ -160,7 +160,7 @@ Of course, our fake `shape` property will only display correct dimensions for co
 ### Creating Multidimensional Arrays with Mir
 
 High-performance multidimensional arrays can be created with [**mir-algorithm**](https://github.com/libmir/mir-algorithm) library which is part of bigger **Mir** package that [comprises various high-performance numeric libraries](https://github.com/libmir) for D.
-In order to comply with the terminology, we refer to arrays as slices and matrices as multidimensional slices represented in Mir by `Slice` class.
+In order to comply with the terminology, we refer to arrays as slices and matrices as multidimensional slices represented in Mir by `Slice` structure.
 
 [**mir.ndslice**](http://mir-algorithm.libmir.org/mir_ndslice_slice.html) module provides various fast and memory-efficient implementations of multidimensional slices (do not confuse them with standard [D slices](https://ddili.org/ders/d.en/slices.html)).
 **mir.ndslice** `Slice` -- a multidimensional random access range that also has `shape`, `strides`, `structure` etc. properties.
@@ -246,15 +246,18 @@ auto mirSlice = [1, 2, 3].sliced;
 ```
 
 `sliced` creates n-dimensional view over an iterator.
-The iterator can be a plain D array or a range.
+The iterator can be a plain D array, pointer, or a user defined iterator.
 
 ```d
 import std.array;
 import mir.ndslice;
 
 int[][] jaggedArr = [[0, 1, 2], [3, 4, 5]]; // standard D array
-auto arrSlice1 = jaggedArr.sliced; // multidimensional view to jaggedArr
-/*
+// creates a 1D Slice view composed of common D arrays. `.shape` is `[2]`
+auto arrSlice11 = jaggedArr.sliced;
+// allocates a 2D Slice. `.shape` is `[2, 3]`
+auto arrSlice12 = jaggedArr.fuse;
+/* arrSlice11 and arrSlice12:
     [[0, 1, 2],
      [3, 4, 5]]
 */
@@ -265,8 +268,15 @@ auto arrSlice2 = 100.iota.array.sliced;
 */
 
 // `iota` function also accepts optional starting value.
-auto a = iota([2, 3], 10).array.sliced;
-/*
+
+// allocates a 1D Slice composed of lazy 1D Slices over `IotaIterator`.
+// `.shape` is `[2]`
+auto a1 = iota([2, 3], 10).array.sliced;
+
+// allocates a 2D Slice. `.shape` is `[2, 3]`
+auto a2 = iota([2, 3], 10).slice;
+
+/* a1 and a2:
     [[10, 11, 12],
      [13, 14, 15]]
 */
@@ -307,6 +317,8 @@ int[] arr = mirSlice.field;
 Wait, but now it is a 1D array!
 Yes, because what we call 2D array in D is just a 2D view into 1D array.
 Using nested arrays `int[][]` to represent multidimensional arrays is not efficient since outer arrays will contain references to inner arrays and every element lookup will have a slight overhead.
+
+`.field` property is available only for contiguous in memory ndslices.
 
 ### Printing Slices
 
@@ -384,6 +396,7 @@ Here, take a look.
 
 ```d
 import mir.ndslice;
+import std.algorithm.mutation: fill;
 import std.range: generate;
 import std.random: uniform;
 
@@ -392,8 +405,7 @@ double[] arr = new double[10]; // allocate double array of nan
 auto fun = generate!(() => uniform(0, .99)); // assign it to a value if you will
 arr.fill(fun); // fill accepts both single values and functions
 
-int err;
-arr.sliced.reshape([5, 2], err);
+arr.sliced(5, 2);
 /*
     [[0.0228295, 0.267278],
      [0.224073, 0.962407],
@@ -408,11 +420,10 @@ If that is not a requirement, we can do the above slightly differently.
 Let's create a new object and provide a 2D view into our filled array.
 
 ```d
-double [] arr = new double[10];
+auto sl = slice!double(5, 2);
 auto fun = generate!(() => uniform(0, 99));
 
-arr.fill(fun);
-auto reshapedArr = arr.sliced(5, 2); // arr stays unchanged
+sl.field.fill(fun);
 /*
     [[0.273062, 0.59894],
      [0.358506, 0.784792],
@@ -434,7 +445,7 @@ import mir.random.variable : uniformVar, normalVar; // our distributions
 import mir.random.algorithm : randomSlice;
 
 
-auto rndMatrix = uniformVar!double(-1.0, 1.0).randomSlice([5, 2]);
+auto rndMatrix1 = uniformVar!int(0, 10).randomSlice([5, 2]);
 /*
     [[5, 0],
      [9, 3],
@@ -445,10 +456,10 @@ auto rndMatrix = uniformVar!double(-1.0, 1.0).randomSlice([5, 2]);
 
 // or another variant with custom rng seed
 auto rng = Random(123);
-auto rndMatrix = rng.randomSlice(uniformVar(-1.0, 1.0), [5, 2]);
+auto rndMatrix2 = rng.randomSlice(uniformVar(-1.0, 1.0), [5, 2]);
 
 // even though the type is inferred, you are free to define it
-auto rndMatrix = rng.randomSlice(uniformVar!double(-1.0, 1.0), [5, 2]);
+auto rndMatrix3 = rng.randomSlice(uniformVar!double(-1.0, 1.0), [5, 2]);
 
 /*
     [[-0.0660341, 0.290473],
@@ -479,6 +490,9 @@ At the end of the day it means that you don't need to know a significant portion
 See how to update the elements to zeros.
 
 ```d
+// works for ndslices, arrays and ranges.
+import mir.algorithm.iteration: each;
+
 rndMatrix.each!((ref a){a = 0;}); // no allocation
 /*
     [[0, 0],
@@ -510,7 +524,7 @@ auto zeroMatrix = rndMatrix.map!(i => 0).slice; // allocation
      [0, 0]]
 */
 
-auto zeroMatrix = rndMatrix.map!(i => 0).array.sliced; // allocation
+auto zeroMatrix = rndMatrix.shape.slice!double(0); // allocation
 /*
     [[0, 0],
      [0, 0],
@@ -545,11 +559,17 @@ rndMatrix.zeros;
 */
 ```
 
+Simple op-index assign works as well.
+
+```
+rndMatrix[] = 0; // or 0.0
+```
+
 A variant with `map` and allocation.
 
 ```d
 auto zeros(T)(T obj){
-    return obj.map!(i => 0); // allocates a new slice
+    return obj.map!"0".slice; // allocates a new slice
 }
 
 auto zeroMatrix = rndMatrix.zeros;
@@ -570,22 +590,22 @@ Basic math operations on 1D slices are straightforward.
 import mir.ndslice;
 
 auto a = 10.iota.sliced(10);
-/*
+/* lazy:
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 */
 
 auto b = a + 2;
-/*
+/* lazy:
     [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 */
 
 auto c = 2 * b - 1;
-/*
+/* lazy:
     [3, 5, 7, 9, 11, 13, 15, 17, 19, 21]
 */
 
-auto d = c^^2;
-/*
+auto d = c^^2; // or c * c
+/* lazy:
     [9, 25, 49, 81, 121, 169, 225, 289, 361, 441]
 */
 
@@ -593,18 +613,18 @@ auto a = slice([3], 1); // [1, 1, 1]
 auto b = slice([3], 2); // [2, 2, 2]
 
 auto c = a + b;
-/*
+/* lazy:
     [3, 3, 3]
 */
 
 auto d = b - a;
-/*
+/* lazy:
     [1, 1, 1]
 */
 
 auto e = 10.iota.sliced(5, 2);
 auto f = e - 9;
-/*
+/* lazy:
     [[-9, -8],
      [-7, -6],
      [-5, -4],
@@ -637,15 +657,15 @@ Let's try.
 
 ```d
 auto a = 10.iota.sliced(5, 2);
-a[1][0] *= 2; // ERROR!
+a[1, 0] *= 2; // ERROR!
 ```
 
-You can't do it on a slice view.
+You can't do it on a lazy slice view.
 What you need is an actual `Slice` object constructed by `slice`.
 
 ```d
 auto a = slice([5, 2], 1);
-a[1][0] *= 2;
+a[1, 0] *= 2;
 /*
     [[1, 1],
      [2, 1],
@@ -678,13 +698,13 @@ auto a = slice!double([2, 3], 1.0);
 import mir.math.common: exp, sqrt;
 
 auto b = a.map!exp;
-/*
+/* lazy:
     [[2.71828, 2.71828, 2.71828],
      [2.71828, 2.71828, 2.71828]]
 */
 
 auto c = b.map!sqrt;
-/*
+/* lazy:
     [[1.64872, 1.64872, 1.64872],
      [1.64872, 1.64872, 1.64872]]
 */
@@ -710,10 +730,12 @@ How to perform operations on separate dimensions?
 For that Mir has `byDim` function which accepts a dimension as a parameter to iterate over.
 Let's see how to use it.
 
+`byDim` returns a 1D slice composed of `N-1`dimensional slices.
+
 ```d
 import mir.ndslice;
 
-auto a = 10.iota.array.sliced(5, 2);
+auto a = [5, 2].iota.slice;
 /*
     [[0, 1],
      [2, 3],
@@ -735,7 +757,7 @@ Let's calculate the sum of each column in a 2D slice.
 import mir.math.sum;
 
 auto colsSum = a.byDim!1.map!sum;
-/*
+/* lazy:
     [20, 25]
 */
 ```
@@ -743,7 +765,9 @@ auto colsSum = a.byDim!1.map!sum;
 We can check which column contains odd numbers.
 
 ```d
-auto b = 10.iota.array.sliced(5, 2);
+import mir.algorithm.iteration: all;
+
+auto b = [5, 2].iota.slice;
 /*
     [[0, 1],
      [2, 3],
@@ -753,7 +777,7 @@ auto b = 10.iota.array.sliced(5, 2);
 */
 
 auto c = a.byDim!1.map!(a => a.all!(a => a % 2 == 1))
-auto d = a.byDim!1.map!(all!"a % 2 == 1"); // or less verbose mixin
+auto d = a.byDim!1.map!(all!"a % 2"); // or less verbose mixin
 /*
     [false, true]
 */
@@ -765,7 +789,7 @@ Now, how about sorting the 2D slice by dimension?
 import mir.ndslice;
 import mir.ndslice.sorting;
 
-auto a = [5, 3, -1, 0, 10, 5, 6, 2, 7, 1].array.sliced(5, 2);
+auto a = [5, 3, -1, 0, 10, 5, 6, 2, 7, 1].sliced(5, 2);
 /*
     [[5, 3],
      [-1, 0],
@@ -871,7 +895,7 @@ matrix[0 .. 2]
      [3, 4]]
 */
 
-matrix[0 .. 2][1]
+matrix[0 .. 2, 1]
 /*
     [3, 4]
 */
