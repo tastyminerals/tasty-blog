@@ -611,11 +611,26 @@ auto f = e - 9;
      [-3, -2],
      [-1, 0]]
 */
+
+auto d = 4.iota.sliced(2, 2);
+auto g = d * d.transposed.slice; // allocate after transpose
+/*
+    [[0, 2],
+     [2, 9]]
+*/
 ```
 
 As you might have noticed operations are applied element-wise.
 I find it more convenient to switch from D array to Mir `Slice` via `sliced`, perform a series of basic operations and then switch back via `.field` to plain D array.
 No need for `map` overuse.
+Keep in mind that `.field` requires the `Slice` to be contiguous (check out [`assumeContiguous` method](http://mir-algorithm.libmir.org/mir_ndslice_topology.html#assumeContiguous).
+Watch out!
+`assumeContiguous` reverts some non-allocating operations such as `.transposed`.
+
+```d
+auto a = 10.iota.sliced(5, 2);
+a.shape == a.transposed.assumeContiguous.shape; // true
+```
 
 What if I want to modify just one or several specific values inside a multidimensional slice?
 Let's try.
