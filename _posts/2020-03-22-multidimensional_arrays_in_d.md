@@ -633,7 +633,8 @@ auto f = e - 9;
 */
 
 auto d = 4.iota.sliced(2, 2);
-auto g = d * d.transposed.slice; // allocate after transpose
+auto g = d * d.transposed.slice; // "g" is not allocated because * is lazy in Mir
+d[] *= d.transposed; // another variant with allocation
 /*
     [[0, 2],
      [2, 9]]
