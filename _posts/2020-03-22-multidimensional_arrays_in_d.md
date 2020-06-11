@@ -300,6 +300,22 @@ auto b = 10.iota.sliced(2, 5);
 */
 ```
 
+But there is more! You can combine `iota` with `fuse` to allocate a new slice like so.
+
+```d
+auto a = [2, 3].iota!int.fuse;
+/*
+    [[0, 1, 2],
+     [3, 4, 5]]
+*/
+
+auto b = [2, 3].iota!int(2).fuse;
+/*
+    [[2, 3, 4],
+     [5, 6, 7]]
+*/
+```
+
 Ok, but how do I get back to plain D arrays?
 
 In order to get back to D array use `.field` slice property.
