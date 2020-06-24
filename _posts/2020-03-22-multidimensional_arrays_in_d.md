@@ -344,7 +344,7 @@ Printing arrays and slices is straightforward in D. Use `writeln` with `foreach`
 import std.stdio;
 import mir.ndslice;
 
-auto m = iota(3, 5).sliced;
+auto m = 15.iota.sliced(3, 5);
 
 writeln(m);
 /*
