@@ -362,7 +362,7 @@ foreach (i; m) {
 ```
 
 Well, it does the job but what about pretty-printing?
-If you want to know how to pretty-print D multidimensional arrays, check out [this blog post](2020-06-25-pretty_printing_arrays.md).
+If you want to know how to pretty-print D multidimensional arrays, check out [this blog post]({% link _posts/2020-06-25-pretty_printing_arrays.md %}).
 
 ### Creating Random N-dimensional Slices
 
