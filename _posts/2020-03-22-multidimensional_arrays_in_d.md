@@ -361,6 +361,9 @@ foreach (i; m) {
 */
 ```
 
+Well, it does the job but what about pretty-printing?
+If you want to know how to pretty-print D multidimensional arrays, check out [this blog post](2020-06-25-pretty_printing_arrays.md).
+
 ### Creating Random N-dimensional Slices
 
 What if you want to create a slice of random elements? We shall make use of **std.range** `generate`, `take` and **std.random** `uniform` functions. Although **mir.ndslice** has many of its own **std.range** function implementations, `generate` and `take` are exclusive for **std.range**.
