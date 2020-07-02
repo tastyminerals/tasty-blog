@@ -169,6 +169,7 @@ All you need to do is to add it to your project via `dub add pretty_array` and u
 The library supports both standard D arrays and Mir Slices.
 
 ```d
+import std.stdio;
 import pretty_array;
 
 void main() {
