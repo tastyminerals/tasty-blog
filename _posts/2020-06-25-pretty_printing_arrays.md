@@ -165,6 +165,16 @@ Although we move away from the original language array syntax, it looks more rea
 You can now reason about the structure of the matrix faster.
 This exactly what small [pretty_array](https://code.dlang.org/packages/pretty_array) library does.
 It parses the D array and converts it to a "pretty" `string` which you can conveniently output.
-All you need to do is to add it to your project via `dub add pretty_array`.
+All you need to do is to add it to your project via `dub add pretty_array` and use `.prettyArr` function it provides on your array.
+The library supports both standard D arrays and Mir Slices.
+
+```d
+import pretty_array;
+
+void main() {
+    int[][] arr = [[1, 2], [3, 4], [5, 6]];
+    arr.prettyArr.writeln;
+}
+```
 
 Have fun!
