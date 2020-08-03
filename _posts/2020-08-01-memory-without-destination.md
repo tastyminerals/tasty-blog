@@ -94,5 +94,5 @@ void main() {
 }
 ```
 
-That's it! You must provide a destination in order to allocate arrays _in-place_.
-You have just learnt about one of the D gotchas ;)
+That's it!
+You have just learnt about one of the D gotchas: you must provide a destination in order to allocate arrays _in-place_.
