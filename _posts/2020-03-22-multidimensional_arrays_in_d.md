@@ -198,9 +198,8 @@ Continue with some more multidimensional examples.
 auto a = slice!int([2, 3]);
 auto b = slice!int(2, 3); // works too!
 /*
-    [[0, 0],
-     [0, 0],
-     [0, 0]]
+    [[0, 0, 0],
+     [0, 0, 0]]
 */
 ```
 
@@ -292,11 +291,8 @@ auto a = 20.iota.sliced(20);
 
 auto b = 10.iota.sliced(2, 5);
 /*
-    [[0, 1],
-     [2, 3],
-     [4, 5],
-     [6, 7],
-     [8, 9]]
+    [[0, 1, 2, 3, 4],
+     [5, 6, 7, 8, 9]]
 */
 ```
 
